@@ -2,6 +2,10 @@
 
 一個基於 Angular 20 的智慧分組應用，幫助教師或活動主持人快速進行學生分組。採用 **責任鏈模式 (Chain of Responsibility Pattern)** 實現靈活且可擴展的分組策略。
 
+## Demo site
+
+https://68d299e83e12a811cce6832b--teamshuffle.netlify.app/
+
 ## 功能特色
 
 - 📝 **靈活輸入**: 支援座號範圍輸入 (如 1-5,7-9)

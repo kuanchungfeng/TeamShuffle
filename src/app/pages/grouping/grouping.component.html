@@ -125,47 +125,55 @@
 
   <!-- Groups -->
   <div class="space-y-6 mb-6">
-    <div class="flex justify-between items-center">
+    <div class="flex justify-between items-start">
       <div>
         <h2 class="text-xl font-bold text-gray-800">分組結果</h2>
         <p class="text-sm text-gray-600 mt-1">
           💡 提示：點擊學生可以設為組長，拖曳學生可以換組
         </p>
       </div>
+      <!-- 次要功能按鈕移到右上角 -->
       <div class="flex gap-2">
         <button
-          mat-raised-button
-          color="primary"
-          (click)="performGrouping()"
-          [disabled]="isLoading() || availableStudents().length === 0"
-        >
-          <mat-spinner
-            *ngIf="isLoading()"
-            diameter="20"
-            class="mr-2"
-          ></mat-spinner>
-          <mat-icon *ngIf="!isLoading()" class="mr-2">shuffle</mat-icon>
-          {{ isLoading() ? "分組中..." : "自動分組" }}
-        </button>
-
-        <button
-          mat-button
+          mat-stroked-button
+          color="accent"
           (click)="selectRandomLeaders()"
           [disabled]="hasNoStudentsInGroups()"
+          class="!py-2"
         >
           <mat-icon class="mr-1">star</mat-icon>
           隨機選組長
         </button>
 
         <button
-          mat-button
+          mat-stroked-button
           (click)="copyResults()"
           [disabled]="hasNoStudentsInGroups()"
+          class="!py-2"
         >
           <mat-icon class="mr-1">content_copy</mat-icon>
           複製結果
         </button>
       </div>
+    </div>
+
+    <!-- 主要功能按鈕 - 居中顯示 -->
+    <div class="flex justify-center mb-6">
+      <button
+        mat-raised-button
+        color="primary"
+        (click)="performGrouping()"
+        [disabled]="isLoading() || availableStudents().length === 0"
+        class="!text-xl !font-bold !px-12 !py-4 !min-h-[64px] shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 !rounded-full"
+      >
+        <mat-spinner
+          *ngIf="isLoading()"
+          diameter="28"
+          class="mr-4"
+        ></mat-spinner>
+        <mat-icon *ngIf="!isLoading()" class="mr-4 !text-3xl">shuffle</mat-icon>
+        {{ isLoading() ? "分組中..." : "🎲 開始自動分組" }}
+      </button>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

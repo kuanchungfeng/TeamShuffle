@@ -4,7 +4,7 @@
 
 ```mermaid
 graph TD
-    A[開始分組] --> B[建立分組上下文]
+    A[進入分組設定] --> B[建立分組上下文]
     B --> C[創建責任鏈]
 
     C --> D[區塊分配處理器<br/>BlockDistributionHandler]

@@ -24,8 +24,8 @@ import { StudentService } from "../../services/student.service";
   styleUrls: ["./home.component.scss"],
 })
 export class HomeComponent implements OnInit {
-  maleInput = signal("1-10");
-  femaleInput = signal("11-20");
+  maleInput = signal("");
+  femaleInput = signal("");
   groupCount = signal(5);
   errorMessage = signal("");
 

@@ -1,0 +1,37 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+}
+
+.drag-over {
+  @apply border-2 border-dashed border-blue-500 bg-blue-50;
+}
+
+.student-card {
+  @apply transition-all duration-200 ease-in-out;
+
+  &:hover {
+    @apply transform scale-105 shadow-lg;
+  }
+}
+
+.group-container {
+  @apply min-h-[200px] border-2 border-dashed border-gray-300 rounded-lg p-4;
+
+  &.has-students {
+    @apply border-solid border-gray-400 bg-gray-50;
+  }
+}
+
+.leader-crown {
+  @apply text-yellow-500;
+}

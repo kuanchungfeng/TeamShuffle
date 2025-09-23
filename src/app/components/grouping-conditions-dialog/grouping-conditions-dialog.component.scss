@@ -1,0 +1,37 @@
+:host {
+  display: block;
+}
+
+.mat-mdc-dialog-content {
+  padding: 0 24px 24px 24px;
+}
+
+.mat-mdc-dialog-actions {
+  padding: 0 24px 24px 24px;
+  margin: 0;
+}
+
+// 確保 mat-form-field 在 dialog 中正確顯示
+.mat-mdc-form-field {
+  width: 100%;
+}
+
+// 錯誤狀態樣式
+.border-red-300 {
+  border-color: #fca5a5;
+}
+
+.bg-red-50 {
+  background-color: #fef2f2;
+}
+
+// 滑動開關樣式調整
+.mat-mdc-slide-toggle {
+  --mdc-switch-selected-track-color: #3b82f6;
+  --mdc-switch-selected-handle-color: #ffffff;
+}
+
+// 按鈕間距
+.mat-mdc-dialog-actions button + button {
+  margin-left: 8px;
+}

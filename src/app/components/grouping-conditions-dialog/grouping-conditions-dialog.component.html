@@ -1,0 +1,164 @@
+<h2 mat-dialog-title class="text-xl font-semibold mb-4">
+  <mat-icon class="mr-2">settings</mat-icon>
+  分組條件設定
+</h2>
+
+<mat-dialog-content class="min-h-96 max-h-96 overflow-y-auto">
+  <!-- 驗證錯誤顯示 -->
+  <div
+    *ngIf="validationErrors().length > 0"
+    class="bg-red-50 border border-red-200 rounded-lg p-3 mb-4"
+  >
+    <div class="flex items-center mb-2">
+      <mat-icon class="text-red-600 mr-2">error</mat-icon>
+      <span class="text-red-700 font-medium">請修正以下錯誤：</span>
+    </div>
+    <ul class="text-red-600 text-sm space-y-1">
+      <li
+        *ngFor="let error of validationErrors(); let i = index"
+        class="flex items-start"
+      >
+        <span class="mr-2">•</span>
+        <span>{{ error }}</span>
+      </li>
+    </ul>
+  </div>
+
+  <!-- 分組條件列表 -->
+  <div class="space-y-4">
+    <div
+      *ngFor="let condition of editingConditions(); trackBy: trackByConditionId"
+      class="bg-gray-50 rounded-lg p-4 border"
+      [class.border-red-300]="hasConditionValidationError(condition)"
+      [class.bg-red-50]="hasConditionValidationError(condition)"
+    >
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-lg font-medium text-gray-800">
+          {{ getConditionName(condition.type) }}
+        </h3>
+        <mat-slide-toggle
+          [checked]="condition.enabled"
+          (change)="toggleCondition(condition.id, $event.checked)"
+          class="ml-4"
+        >
+        </mat-slide-toggle>
+      </div>
+
+      <!-- 輸入欄位（只對同組和不同組條件顯示） -->
+      <div
+        *ngIf="isConditionInputType(condition) && condition.enabled"
+        class="mt-3"
+      >
+        <mat-form-field class="w-full" appearance="outline">
+          <mat-label>{{ getConditionName(condition.type) }}設定</mat-label>
+          <input
+            matInput
+            [placeholder]="getConditionPlaceholder(condition.type)"
+            [value]="condition.input"
+            (input)="updateConditionInput(condition.id, $event.target.value)"
+            [class.border-red-500]="hasConditionValidationError(condition)"
+          />
+          <mat-icon
+            matSuffix
+            *ngIf="hasConditionValidationError(condition)"
+            class="text-red-500"
+          >
+            error
+          </mat-icon>
+          <mat-hint *ngIf="!hasConditionValidationError(condition)">
+            {{ getConditionPlaceholder(condition.type) }}
+          </mat-hint>
+          <mat-error
+            *ngIf="
+              hasConditionValidationError(condition) &&
+              condition.type === 'same-group'
+            "
+          >
+            {{ getSameGroupValidationError(condition.id) }}
+          </mat-error>
+          <mat-error
+            *ngIf="
+              hasConditionValidationError(condition) &&
+              condition.type === 'different-group'
+            "
+          >
+            {{ getDifferentGroupValidationError(condition.id) }}
+          </mat-error>
+        </mat-form-field>
+      </div>
+
+      <!-- 區塊分配的特殊輸入介面 -->
+      <div
+        *ngIf="isBlockDistribution(condition) && condition.enabled"
+        class="mt-3 space-y-3"
+      >
+        <div class="text-sm font-medium text-gray-700 mb-3">區塊設定</div>
+
+        <!-- 三個並排的區塊輸入框 -->
+        <div class="grid grid-cols-3 gap-4">
+          <div
+            *ngFor="
+              let blockInput of condition.blockInputs;
+              let i = index;
+              trackBy: trackByBlockIndex
+            "
+            class="flex flex-col"
+          >
+            <label class="text-sm font-medium text-gray-600 mb-2"
+              >區塊 {{ i + 1 }}</label
+            >
+            <mat-form-field class="w-full" appearance="outline">
+              <textarea
+                matInput
+                [id]="'block-' + condition.id + '-' + i"
+                [value]="blockInput"
+                (input)="
+                  updateBlockInput(condition.id, i, $any($event.target).value)
+                "
+                placeholder="請輸入學生座號&#10;每行一個座號&#10;&#10;範例:&#10;1&#10;2&#10;3&#10;或 1-5"
+                rows="8"
+                cdkTextareaAutosize
+                cdkAutosizeMinRows="6"
+                cdkAutosizeMaxRows="12"
+                class="font-mono text-sm"
+              ></textarea>
+            </mat-form-field>
+          </div>
+        </div>
+
+        <div
+          class="text-xs text-gray-600 bg-blue-50 p-3 rounded border-l-4 border-blue-400"
+        >
+          <div class="flex items-start">
+            <mat-icon class="text-sm mr-2 mt-0.5 text-blue-600">info</mat-icon>
+            <div>
+              <div class="font-medium text-blue-800 mb-1">使用說明：</div>
+              <ul class="space-y-1 text-blue-700">
+                <li>• 每行輸入一個學生座號</li>
+                <li>• 支援範圍輸入（如：1-5 表示 1,2,3,4,5）</li>
+                <li>• 系統會將同一區塊的學生盡量分散到不同組別</li>
+                <li>• 空白的區塊會被忽略</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions class="flex justify-end space-x-2 pt-4 border-t">
+  <button mat-button (click)="onCancel()" class="text-gray-600">
+    <mat-icon class="mr-1">close</mat-icon>
+    取消
+  </button>
+  <button
+    mat-raised-button
+    color="primary"
+    (click)="onSave()"
+    [disabled]="validationErrors().length > 0"
+  >
+    <mat-icon class="mr-1">save</mat-icon>
+    保存設定
+  </button>
+</mat-dialog-actions>

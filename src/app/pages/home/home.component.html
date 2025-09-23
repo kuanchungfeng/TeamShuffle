@@ -1,0 +1,120 @@
+<div class="container mx-auto px-4 py-8 max-w-2xl">
+  <mat-card class="p-6">
+    <mat-card-header class="mb-6">
+      <mat-card-title class="text-center text-2xl font-bold text-gray-800">
+        <mat-icon class="mr-2 text-3xl align-middle">groups</mat-icon>
+        分組設定
+      </mat-card-title>
+      <mat-card-subtitle class="text-center text-gray-600 mt-2">
+        請輸入學生資訊和分組數量
+      </mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      <div class="space-y-4">
+        <div>
+          <mat-form-field appearance="outline" class="w-full">
+            <mat-label>女生座號</mat-label>
+            <input
+              matInput
+              [(ngModel)]="femaleInput"
+              (input)="onFemaleInputChange()"
+              placeholder="例如: 1-3,6-8 (代表女1-3號，6-8號)"
+              class="text-lg"
+              [class.mat-mdc-input-invalid]="femaleInputErrors().length > 0"
+            />
+            <mat-hint *ngIf="femaleInputErrors().length === 0">
+              使用逗號分隔，支援範圍表示法 (如 1-5)
+            </mat-hint>
+          </mat-form-field>
+          <div
+            *ngIf="femaleInputErrors().length > 0"
+            class="text-red-600 text-sm -mt-2 mb-2 flex items-center"
+          >
+            <mat-icon class="mr-1 text-sm">error</mat-icon>
+            {{ femaleInputErrors().join(", ") }}
+          </div>
+        </div>
+
+        <div>
+          <mat-form-field appearance="outline" class="w-full">
+            <mat-label>男生座號</mat-label>
+            <input
+              matInput
+              [(ngModel)]="maleInput"
+              (input)="onMaleInputChange()"
+              placeholder="例如: 1-5,7-9 (代表男1-5號，7-9號)"
+              class="text-lg"
+              [class.mat-mdc-input-invalid]="maleInputErrors().length > 0"
+            />
+            <mat-hint *ngIf="maleInputErrors().length === 0">
+              使用逗號分隔，支援範圍表示法 (如 6-10)
+            </mat-hint>
+          </mat-form-field>
+          <div
+            *ngIf="maleInputErrors().length > 0"
+            class="text-red-600 text-sm -mt-2 mb-2 flex items-center"
+          >
+            <mat-icon class="mr-1 text-sm">error</mat-icon>
+            {{ maleInputErrors().join(", ") }}
+          </div>
+        </div>
+
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>分組數量</mat-label>
+          <input
+            matInput
+            type="number"
+            [(ngModel)]="groupCount"
+            min="2"
+            max="20"
+            class="text-lg"
+          />
+          <mat-hint>請輸入 2-20 之間的數字</mat-hint>
+        </mat-form-field>
+
+        <div
+          *ngIf="errorMessage()"
+          class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded"
+        >
+          <mat-icon class="mr-2 align-middle">error</mat-icon>
+          {{ errorMessage() }}
+        </div>
+      </div>
+    </mat-card-content>
+
+    <mat-card-actions class="flex justify-center mt-6">
+      <button
+        mat-raised-button
+        color="primary"
+        (click)="startGrouping()"
+        [disabled]="!canStartGrouping()"
+        class="px-8 py-2 text-lg"
+      >
+        <mat-icon class="mr-2">arrow_forward</mat-icon>
+        開始分組
+      </button>
+    </mat-card-actions>
+  </mat-card>
+
+  <!-- Preview section -->
+  <mat-card *ngIf="previewStudents().length > 0" class="mt-6 p-6">
+    <mat-card-title class="text-lg mb-4">
+      <mat-icon class="mr-2">preview</mat-icon>
+      學生預覽 (共 {{ previewStudents().length }} 人)
+    </mat-card-title>
+    <div class="flex flex-wrap gap-2">
+      <div
+        *ngFor="let student of previewStudents(); trackBy: trackByStudentId"
+        class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium"
+        [class]="
+          student.gender === 'male'
+            ? 'bg-blue-100 text-blue-800'
+            : 'bg-pink-100 text-pink-800'
+        "
+      >
+        {{ student.gender === "male" ? "男" : "女" }}{{ student.id }}
+      </div>
+    </div>
+  </mat-card>
+</div>

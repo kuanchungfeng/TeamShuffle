@@ -1,120 +1,282 @@
-<div class="container mx-auto px-4 py-8 max-w-2xl">
-  <mat-card class="p-6">
-    <mat-card-header class="mb-6">
-      <mat-card-title class="text-center text-2xl font-bold text-gray-800">
-        <mat-icon class="mr-2 text-3xl align-middle">groups</mat-icon>
-        分組設定
+<div class="container mx-auto px-4 py-6" cdkDropListGroup>
+  <!-- Header -->
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold text-gray-800">
+      <mat-icon class="mr-2 text-3xl align-middle">groups</mat-icon>
+      分組管理
+    </h1>
+
+    <!-- Settings button -->
+    <button
+      mat-fab
+      color="primary"
+      (click)="openConditionsDialog()"
+      class="!w-12 !h-12"
+      matTooltip="分組條件設定"
+    >
+      <mat-icon>settings</mat-icon>
+    </button>
+  </div>
+
+  <!-- Students Pool -->
+  <mat-card class="mb-6">
+    <mat-card-header>
+      <mat-card-title class="flex items-center">
+        <mat-icon class="mr-2">person</mat-icon>
+        學生列表 ({{ availableStudents().length }} 人)
       </mat-card-title>
-      <mat-card-subtitle class="text-center text-gray-600 mt-2">
-        請輸入學生資訊和分組數量
-      </mat-card-subtitle>
     </mat-card-header>
-
     <mat-card-content>
-      <div class="space-y-4">
+      <!-- Initial setup section -->
+      <div
+        class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 p-4 bg-gray-50 rounded-lg"
+      >
         <div>
-          <mat-form-field appearance="outline" class="w-full">
-            <mat-label>女生座號</mat-label>
-            <input
-              matInput
-              [(ngModel)]="femaleInput"
-              (input)="onFemaleInputChange()"
-              placeholder="例如: 1-3,6-8 (代表女1-3號，6-8號)"
-              class="text-lg"
-              [class.mat-mdc-input-invalid]="femaleInputErrors().length > 0"
-            />
-            <mat-hint *ngIf="femaleInputErrors().length === 0">
-              使用逗號分隔，支援範圍表示法 (如 1-5)
-            </mat-hint>
-          </mat-form-field>
-          <div
-            *ngIf="femaleInputErrors().length > 0"
-            class="text-red-600 text-sm -mt-2 mb-2 flex items-center"
-          >
-            <mat-icon class="mr-1 text-sm">error</mat-icon>
-            {{ femaleInputErrors().join(", ") }}
+          <h3 class="text-lg font-medium mb-3 text-gray-700">初始設定</h3>
+          <div class="space-y-3">
+            <mat-form-field class="w-full">
+              <mat-label>女生座號</mat-label>
+              <input
+                matInput
+                [(ngModel)]="femaleInput"
+                (input)="onFemaleInputChange()"
+                placeholder="例如: 1-3,6-8"
+                [class.mat-mdc-input-invalid]="femaleInputErrors().length > 0"
+              />
+              <mat-hint *ngIf="femaleInputErrors().length === 0">
+                使用逗號分隔，支援範圍表示法
+              </mat-hint>
+            </mat-form-field>
+            <div
+              *ngIf="femaleInputErrors().length > 0"
+              class="text-red-600 text-sm -mt-2 mb-2 flex items-center"
+            >
+              <mat-icon class="mr-1 text-sm">error</mat-icon>
+              {{ femaleInputErrors().join(", ") }}
+            </div>
+
+            <mat-form-field class="w-full">
+              <mat-label>男生座號</mat-label>
+              <input
+                matInput
+                [(ngModel)]="maleInput"
+                (input)="onMaleInputChange()"
+                placeholder="例如: 1-5,7-9"
+                [class.mat-mdc-input-invalid]="maleInputErrors().length > 0"
+              />
+              <mat-hint *ngIf="maleInputErrors().length === 0">
+                使用逗號分隔，支援範圍表示法
+              </mat-hint>
+            </mat-form-field>
+            <div
+              *ngIf="maleInputErrors().length > 0"
+              class="text-red-600 text-sm -mt-2 mb-2 flex items-center"
+            >
+              <mat-icon class="mr-1 text-sm">error</mat-icon>
+              {{ maleInputErrors().join(", ") }}
+            </div>
           </div>
         </div>
 
         <div>
-          <mat-form-field appearance="outline" class="w-full">
-            <mat-label>男生座號</mat-label>
-            <input
-              matInput
-              [(ngModel)]="maleInput"
-              (input)="onMaleInputChange()"
-              placeholder="例如: 1-5,7-9 (代表男1-5號，7-9號)"
-              class="text-lg"
-              [class.mat-mdc-input-invalid]="maleInputErrors().length > 0"
-            />
-            <mat-hint *ngIf="maleInputErrors().length === 0">
-              使用逗號分隔，支援範圍表示法 (如 6-10)
-            </mat-hint>
-          </mat-form-field>
-          <div
-            *ngIf="maleInputErrors().length > 0"
-            class="text-red-600 text-sm -mt-2 mb-2 flex items-center"
-          >
-            <mat-icon class="mr-1 text-sm">error</mat-icon>
-            {{ maleInputErrors().join(", ") }}
+          <h3 class="text-lg font-medium mb-3 text-gray-700">分組設定</h3>
+          <div class="space-y-3">
+            <mat-form-field class="w-full">
+              <mat-label>分組數量</mat-label>
+              <input
+                matInput
+                type="number"
+                [(ngModel)]="groupCount"
+                min="2"
+                max="20"
+                (ngModelChange)="updateGroupCount()"
+              />
+              <mat-hint>請輸入 2-20 之間的數字</mat-hint>
+            </mat-form-field>
+
+            <button
+              mat-raised-button
+              color="primary"
+              (click)="initializeFromInputs()"
+              [disabled]="!canInitialize()"
+              class="w-full"
+            >
+              <mat-icon class="mr-2">add_box</mat-icon>
+              新增至下方區塊
+            </button>
           </div>
         </div>
-
-        <mat-form-field appearance="outline" class="w-full">
-          <mat-label>分組數量</mat-label>
-          <input
-            matInput
-            type="number"
-            [(ngModel)]="groupCount"
-            min="2"
-            max="20"
-            class="text-lg"
-          />
-          <mat-hint>請輸入 2-20 之間的數字</mat-hint>
+      </div>
+      <!-- Absent students -->
+      <div class="mb-4 flex gap-2 items-start">
+        <mat-form-field class="flex-1">
+          <mat-label>缺席學生座號</mat-label>
+          <input matInput [(ngModel)]="absentInput" placeholder="3,5,7" />
+          <mat-hint>輸入缺席學生的座號，這些學生將被移除</mat-hint>
         </mat-form-field>
+        <button
+          mat-raised-button
+          color="warn"
+          (click)="setAbsentStudents()"
+          class="mt-0"
+          [disabled]="!absentInput().trim()"
+        >
+          <mat-icon class="mr-2">person_remove</mat-icon>
+          設定缺席學生
+        </button>
+      </div>
+
+      <!-- Students display -->
+      <div
+        cdkDropList
+        [cdkDropListData]="availableStudents()"
+        id="available"
+        (cdkDropListDropped)="onDrop($event)"
+        class="flex flex-wrap gap-2 min-h-[100px] p-4 border-2 border-dashed border-gray-300 rounded-lg"
+        [class.drag-over]="isDragOver()"
+      >
+        <div
+          *ngFor="let student of availableStudents(); trackBy: trackByStudentId"
+          cdkDrag
+          class="student-card flex items-center px-3 py-2 rounded-lg cursor-move relative group"
+          [class]="getStudentGenderClass(student)"
+        >
+          <span class="font-medium">
+            {{ student.gender === "male" ? "男" : "女" }}{{ student.id }}
+          </span>
+          <button
+            (click)="removeStudent(student.id)"
+            class="ml-2 opacity-0 group-hover:opacity-100 transition-opacity"
+            mat-icon-button
+            [attr.aria-label]="'移除學生 ' + student.id"
+          >
+            <mat-icon class="text-sm">close</mat-icon>
+          </button>
+        </div>
 
         <div
-          *ngIf="errorMessage()"
-          class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded"
+          *ngIf="availableStudents().length === 0"
+          class="text-gray-500 text-center w-full py-8"
         >
-          <mat-icon class="mr-2 align-middle">error</mat-icon>
-          {{ errorMessage() }}
+          所有學生已分組或無學生資料
         </div>
       </div>
     </mat-card-content>
+  </mat-card>
 
-    <mat-card-actions class="flex justify-center mt-6">
+  <!-- Groups -->
+  <div class="space-y-6 mb-6">
+    <div class="flex justify-between items-start">
+      <div>
+        <h2 class="text-xl font-bold text-gray-800">分組結果</h2>
+        <p class="text-sm text-gray-600 mt-1">
+          💡 提示：點擊學生可以設為組長，拖曳學生可以換組
+        </p>
+      </div>
+      <!-- 次要功能按鈕移到右上角 -->
+      <div class="flex gap-2">
+        <button
+          mat-stroked-button
+          color="accent"
+          (click)="selectRandomLeaders()"
+          [disabled]="hasNoStudentsInGroups()"
+          class="!py-2"
+        >
+          <mat-icon class="mr-1">star</mat-icon>
+          隨機選組長
+        </button>
+
+        <button
+          mat-stroked-button
+          (click)="copyResults()"
+          [disabled]="hasNoStudentsInGroups()"
+          class="!py-2"
+        >
+          <mat-icon class="mr-1">content_copy</mat-icon>
+          複製結果
+        </button>
+      </div>
+    </div>
+
+    <!-- 主要功能按鈕 - 居中顯示 -->
+    <div class="flex justify-center mb-6">
       <button
         mat-raised-button
         color="primary"
-        (click)="startGrouping()"
-        [disabled]="!canStartGrouping()"
-        class="px-8 py-2 text-lg"
+        (click)="performGrouping()"
+        [disabled]="isLoading() || availableStudents().length === 0"
+        class="!text-xl !font-bold !px-12 !py-4 !min-h-[64px] shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 !rounded-full"
       >
-        <mat-icon class="mr-2">arrow_forward</mat-icon>
-        進入分組設定
+        <mat-spinner
+          *ngIf="isLoading()"
+          diameter="28"
+          class="mr-4"
+        ></mat-spinner>
+        <mat-icon *ngIf="!isLoading()" class="mr-4 !text-3xl">shuffle</mat-icon>
+        {{ isLoading() ? "分組中..." : "🎲 開始自動分組" }}
       </button>
-    </mat-card-actions>
-  </mat-card>
-
-  <!-- Preview section -->
-  <mat-card *ngIf="previewStudents().length > 0" class="mt-6 p-6">
-    <mat-card-title class="text-lg mb-4">
-      <mat-icon class="mr-2">preview</mat-icon>
-      學生預覽 (共 {{ previewStudents().length }} 人)
-    </mat-card-title>
-    <div class="flex flex-wrap gap-2">
-      <div
-        *ngFor="let student of previewStudents(); trackBy: trackByStudentId"
-        class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium"
-        [class]="
-          student.gender === 'male'
-            ? 'bg-blue-100 text-blue-800'
-            : 'bg-pink-100 text-pink-800'
-        "
-      >
-        {{ student.gender === "male" ? "男" : "女" }}{{ student.id }}
-      </div>
     </div>
-  </mat-card>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <mat-card
+        *ngFor="let group of groups(); trackBy: trackByGroupId"
+        class="group-container"
+        [class.has-students]="group.students.length > 0"
+      >
+        <mat-card-header>
+          <mat-card-title class="text-lg">{{ group.name }}</mat-card-title>
+          <mat-card-subtitle
+            >{{ group.students.length }} 人{{
+              getGenderDistribution(group)
+            }}</mat-card-subtitle
+          >
+        </mat-card-header>
+        <mat-card-content>
+          <div
+            cdkDropList
+            [cdkDropListData]="group.students"
+            [id]="group.id"
+            (cdkDropListDropped)="onDrop($event)"
+            class="min-h-[120px] space-y-2"
+          >
+            <div
+              *ngFor="let student of group.students; trackBy: trackByStudentId"
+              cdkDrag
+              class="student-card flex items-center justify-between px-3 py-2 rounded cursor-pointer hover:bg-opacity-80 transition-all duration-200"
+              [class]="getStudentCardClass(student)"
+              (click)="toggleLeader(group.id, student.id)"
+              [matTooltip]="student.isLeader ? '點擊取消組長' : '點擊設為組長'"
+              matTooltipPosition="above"
+            >
+              <span class="flex items-center">
+                <mat-icon
+                  *ngIf="student.isLeader"
+                  class="leader-star mr-1 text-lg animate-pulse"
+                  >star</mat-icon
+                >
+                <mat-icon
+                  *ngIf="!student.isLeader"
+                  class="potential-leader mr-1 text-lg opacity-30 group-hover:opacity-70 transition-opacity"
+                  >star_border</mat-icon
+                >
+                {{ student.gender === "male" ? "男" : "女" }}{{ student.id }}
+              </span>
+              <span
+                *ngIf="student.isLeader"
+                class="text-xs bg-yellow-200 text-yellow-800 px-2 py-1 rounded"
+                >組長</span
+              >
+            </div>
+
+            <div
+              *ngIf="group.students.length === 0"
+              class="text-gray-400 text-center py-8 text-sm"
+            >
+              拖拉學生到此處
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
 </div>

@@ -137,7 +137,7 @@ export class BlockDistributionHandler extends GroupingHandler {
 
 ```typescript
 // StudentService 中的分組方法
-autoGroup(): void {
+performGrouping(): void {
   // 建立處理器實例
   const blockDistributionHandler = new BlockDistributionHandler();
   const sameGroupHandler = new SameGroupHandler();
@@ -193,7 +193,7 @@ class StudentService {
   // 核心方法
   addStudents(input: string, gender: "male" | "female"): void;
   removeStudent(studentId: number): void;
-  autoGroup(): void;
+  performGrouping(): void;
   moveStudentToGroup(
     studentId: number,
     fromGroupId: string,
@@ -213,17 +213,26 @@ class StudentService {
 - 對話框狀態管理
 - 條件驗證
 
-### GroupingComponent
+### HomeComponent
 
-**職責**: 主要的分組 UI 組件
+**職責**: 整合所有分組功能的主要 UI 組件
 
 **主要功能**:
 
-- 學生列表顯示
+- 初始學生設定（男女生座號輸入、分組數量設定）
+- 學生管理（新增、移除、缺席設定）
+- 學生列表顯示和拖拉功能
 - 分組結果展示
-- 拖拉功能
-- 條件設定對話框
+- 分組條件設定對話框
 - 組長指定功能
+- 自動分組執行
+
+**架構特色**:
+
+- 採用 Standalone Component 架構
+- 整合原本分散在多個頁面的功能
+- 使用 Angular Signals 進行響應式狀態管理
+- 結合 Angular Material 和 Tailwind CSS 提供現代化 UI
 
 ## 資料流程
 
@@ -232,12 +241,12 @@ class StudentService {
 ```mermaid
 sequenceDiagram
     participant U as User
-    participant GC as GroupingComponent
+    participant HC as HomeComponent
     participant SS as StudentService
     participant Chain as Handler Chain
 
-    U->>GC: 點擊「自動分組」
-    GC->>SS: autoGroup()
+    U->>HC: 點擊「🎲 開始自動分組」
+    HC->>SS: performGrouping()
 
     SS->>SS: 準備分組條件
     SS->>SS: 建立 GroupingContext
@@ -251,8 +260,8 @@ sequenceDiagram
 
     Chain->>SS: 返回 GroupingResult
     SS->>SS: 更新 groups signal
-    SS->>GC: 通知狀態變更
-    GC->>U: 顯示分組結果
+    SS->>HC: 通知狀態變更
+    HC->>U: 顯示分組結果
 ```
 
 ### 拖拉功能流程
@@ -261,16 +270,16 @@ sequenceDiagram
 sequenceDiagram
     participant U as User
     participant CDK as Angular CDK
-    participant GC as GroupingComponent
+    participant HC as HomeComponent
     participant SS as StudentService
 
     U->>CDK: 拖拉學生
-    CDK->>GC: cdkDropListDropped事件
-    GC->>GC: 解析拖拉資訊
-    GC->>SS: moveStudentToGroup()
+    CDK->>HC: cdkDropListDropped事件
+    HC->>HC: 解析拖拉資訊
+    HC->>SS: moveStudentToGroup()
     SS->>SS: 更新 groups signal
-    SS->>GC: 自動更新 UI
-    GC->>U: 顯示新的分組狀態
+    SS->>HC: 自動更新 UI
+    HC->>U: 顯示新的分組狀態
 ```
 
 ## 擴展指南

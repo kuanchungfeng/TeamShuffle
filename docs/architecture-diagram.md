@@ -33,8 +33,7 @@ graph TD
 ```mermaid
 graph TB
     subgraph "前端 UI 層"
-        A[HomeComponent<br/>首頁設定]
-        B[GroupingComponent<br/>分組主頁面]
+        A[HomeComponent<br/>整合所有分組功能]
         C[GroupingConditionsDialog<br/>條件設定對話框]
     end
 
@@ -62,8 +61,7 @@ graph TB
     end
 
     A --> D
-    B --> D
-    B --> E
+    A --> E
     C --> E
 
     D --> F
@@ -94,15 +92,15 @@ graph TB
 ```mermaid
 sequenceDiagram
     participant U as User
-    participant GC as GroupingComponent
+    participant HC as HomeComponent
     participant SS as StudentService
     participant BD as BlockDistributionHandler
     participant SG as SameGroupHandler
     participant DG as DifferentGroupHandler
     participant GR as GenderRatioHandler
 
-    U->>GC: 點擊自動分組
-    GC->>SS: 呼叫 autoGroup()
+    U->>HC: 點擊「🎲 開始自動分組」
+    HC->>SS: 呼叫 performGrouping()
     SS->>SS: 建立分組條件
     SS->>SS: 創建 GroupingContext
 
@@ -120,8 +118,8 @@ sequenceDiagram
     GR->>SS: 返回 GroupingResult
 
     SS->>SS: 更新 groups signal
-    SS->>GC: 通知分組完成
-    GC->>U: 顯示分組結果
+    SS->>HC: 通知分組完成
+    HC->>U: 顯示分組結果
 ```
 
 ## 組件互動圖
@@ -135,7 +133,7 @@ graph LR
     end
 
     subgraph "UI 組件"
-        D[GroupingComponent]
+        D[HomeComponent<br/>整合所有功能]
         E[GroupingConditionsDialog]
         F[拖拉功能<br/>CDK Drag & Drop]
     end

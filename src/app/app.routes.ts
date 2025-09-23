@@ -7,13 +7,6 @@ export const routes: Routes = [
       import("./pages/home/home.component").then((m) => m.HomeComponent),
   },
   {
-    path: "grouping",
-    loadComponent: () =>
-      import("./pages/grouping/grouping.component").then(
-        (m) => m.GroupingComponent
-      ),
-  },
-  {
     path: "**",
     redirectTo: "",
   },

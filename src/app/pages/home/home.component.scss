@@ -1,4 +1,4 @@
-// Home component styles
+// Home component styles - now includes grouping functionality
 // Container styles are handled by Tailwind utility classes
 
 // Override Material Design styles if needed
@@ -31,5 +31,106 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+// Grouping functionality styles
+.student-card {
+  transition: all 0.2s ease-in-out;
+  position: relative;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+
+    .potential-leader {
+      opacity: 0.7 !important;
+    }
+  }
+
+  // 添加點擊提示
+  &::after {
+    content: "點擊設為組長";
+    position: absolute;
+    top: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    z-index: 10;
+  }
+
+  &:hover::after {
+    opacity: 1;
+  }
+
+  // 組長卡片的特殊提示
+  &.leader-card::after {
+    content: "點擊取消組長";
+  }
+}
+
+.group-container {
+  transition: border-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+
+  &.has-students {
+    border-color: #10b981;
+  }
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+}
+
+.leader-star {
+  color: #f59e0b;
+  filter: drop-shadow(0 2px 4px rgba(245, 158, 11, 0.3));
+}
+
+.potential-leader {
+  color: #d1d5db;
+  transition: all 0.2s ease;
+}
+
+.drag-over {
+  background-color: #f3f4f6;
+  border-color: #3b82f6;
+}
+
+// Custom scrollbar for better UX
+.space-y-2 {
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #f1f5f9;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 2px;
+
+    &:hover {
+      background: #94a3b8;
+    }
+  }
+}
+
+// Better visual feedback for drop zones
+.cdk-drop-list {
+  &.cdk-drop-list-receiving {
+    .cdk-drag-placeholder {
+      background: #e5e7eb;
+      border: 2px dashed #9ca3af;
+    }
   }
 }

@@ -28,7 +28,7 @@ export class GroupingConditionsService {
       enabled: false,
       input: "",
     },
-    { id: "gender-ratio", type: "gender-ratio", enabled: false, input: "" },
+    { id: "gender-ratio", type: "gender-ratio", enabled: true, input: "" },
   ]);
 
   // 臨時編輯狀態（用於 dialog）
@@ -104,7 +104,7 @@ export class GroupingConditionsService {
         enabled: false,
         input: "",
       },
-      { id: "gender-ratio", type: "gender-ratio", enabled: false, input: "" },
+      { id: "gender-ratio", type: "gender-ratio", enabled: true, input: "" },
     ]);
   }
 

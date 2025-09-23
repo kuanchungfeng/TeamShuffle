@@ -37,7 +37,7 @@ export class StudentService {
     {
       id: "gender-ratio",
       type: "gender-ratio",
-      enabled: false,
+      enabled: true,
       priority: 3,
       config: { type: "auto" },
     },

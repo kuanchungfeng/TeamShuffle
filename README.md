@@ -4,7 +4,7 @@
 
 ## Demo site
 
-https://68d299e83e12a811cce6832b--teamshuffle.netlify.app/
+https://teamshuffle.netlify.app/
 
 ## 功能特色
 

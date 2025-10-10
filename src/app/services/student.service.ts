@@ -209,13 +209,19 @@ export class StudentService {
     return errors;
   }
 
-  performGrouping(conditionInputs: { [key: string]: string } = {}): void {
+  performGrouping(): void {
     const students = [...this.studentsSignal()];
     const groups = this.groupsSignal().map((g) => ({ ...g, students: [] }));
+
+    console.log('🎯 開始分組流程');
+    console.log('原始學生列表:', students);
+    console.log('初始組別:', groups);
 
     // 從 GroupingConditionsService 獲取啟用的條件
     const enabledConditions =
       this.groupingConditionsService.getEnabledConditions();
+
+    console.log('啟用的條件:', enabledConditions);
 
     // 轉換為舊格式的條件對象
     const conditions: GroupingCondition[] = enabledConditions.map(
@@ -235,6 +241,8 @@ export class StudentService {
       })
     );
 
+    console.log('轉換後的條件:', conditions);
+
     // Reset all students to not be leaders
     students.forEach((s) => (s.isLeader = false));
 
@@ -243,6 +251,8 @@ export class StudentService {
     const sameGroupHandler = new SameGroupHandler();
     const differentGroupHandler = new DifferentGroupHandler();
     const genderRatioHandler = new GenderRatioHandler();
+
+    console.log('🔗 設置責任鏈');
 
     // 設置處理鏈：區塊分配 -> 同組條件 -> 不同組條件 -> 性別比例
     blockDistributionHandler.setNext(sameGroupHandler);
@@ -257,31 +267,166 @@ export class StudentService {
       remainingStudents: [...students],
     };
 
+    console.log('初始Context:', context);
+
     // Process through chain of responsibility
+    console.log('🚀 開始責任鏈處理');
     const result = blockDistributionHandler.handle(context);
 
-    // If no handler processed the grouping, fall back to simple random distribution
-    if (!result.handled) {
-      const shuffled = [...students].sort(() => Math.random() - 0.5);
-      shuffled.forEach((student, index) => {
-        const groupIndex = index % groups.length;
-        groups[groupIndex].students.push(student);
-      });
+    console.log('責任鏈最終結果:', result);
 
-      // 按座號排序每個組別內的學生
-      groups.forEach((group) => {
-        group.students.sort((a, b) => a.id - b.id);
-      });
-
-      this.groupsSignal.set(groups);
+    // 無論責任鏈是否處理，都要強制執行人數均分（最高優先級）
+    let finalGroups: Group[];
+    
+    if (result.handled) {
+      console.log('✅ 使用責任鏈結果作為基礎，但強制均分人數');
+      finalGroups = result.groups;
     } else {
-      // Use the result from the handler chain
+      console.log('⚠️ 沒有handler處理，使用空組別作為基礎');
+      finalGroups = groups.map((g) => ({ ...g, students: [] }));
+    }
+
+    // 強制均分所有學生
+    this.forceEqualDistribution(finalGroups, students);
+
+    console.log('🎯 強制均分完成，最終分組結果:');
+    finalGroups.forEach((group, index) => {
+      const males = group.students.filter(s => s.gender === 'male').length;
+      const females = group.students.filter(s => s.gender === 'female').length;
+      console.log(`組別${index + 1}: ${group.students.length}人 (${males}男${females}女)`);
+    });
+
+    this.groupsSignal.set(finalGroups);
+  }
+
+  /**
+   * 強制均分所有學生到各組，並盡量保持性別平衡
+   */
+  private forceEqualDistribution(groups: Group[], allStudents: Student[]): void {
+    console.log('🎯 開始強制均分學生');
+    
+    // 收集所有已分組的學生（從責任鏈結果中）
+    const assignedStudents: Student[] = [];
+    groups.forEach(group => {
+      assignedStudents.push(...group.students);
+    });
+    
+    // 找出未分組的學生
+    const unassignedStudents = allStudents.filter(student => 
+      !assignedStudents.some(assigned => assigned.id === student.id)
+    );
+    
+    // 合併所有學生重新分配
+    const studentsToDistribute = [...assignedStudents, ...unassignedStudents];
+    console.log(`總共需要分配 ${studentsToDistribute.length} 人到 ${groups.length} 組`);
+    
+    // 按性別分類並打亂
+    const maleStudents = studentsToDistribute.filter(s => s.gender === 'male').sort(() => Math.random() - 0.5);
+    const femaleStudents = studentsToDistribute.filter(s => s.gender === 'female').sort(() => Math.random() - 0.5);
+    
+    console.log(`男生: ${maleStudents.length}人, 女生: ${femaleStudents.length}人`);
+    
+    // 計算每組人數
+    const totalStudents = studentsToDistribute.length;
+    const groupCount = groups.length;
+    const baseSize = Math.floor(totalStudents / groupCount);
+    const extra = totalStudents % groupCount;
+    
+    console.log(`每組基本人數: ${baseSize}, 前${extra}組多1人`);
+    
+    // 清空所有組別
+    groups.forEach(group => group.students = []);
+    
+    // 策略：先確保每組都有男生，再分配女生，最後補齊人數
+    
+    // 第一步：先給每組分配至少1個男生（如果有足夠男生）
+    let maleIndex = 0;
+    if (maleStudents.length >= groupCount) {
+      console.log('🚹 第一輪：每組先分配1個男生');
+      groups.forEach((group, groupIndex) => {
+        if (maleIndex < maleStudents.length) {
+          group.students.push(maleStudents[maleIndex]);
+          console.log(`組別${groupIndex + 1}: 分配男生${maleStudents[maleIndex].id}`);
+          maleIndex++;
+        }
+      });
+    }
+    
+    // 第二步：輪流分配剩餘的男生
+    console.log('🚹 第二輪：輪流分配剩餘男生');
+    let currentGroupIndex = 0;
+    while (maleIndex < maleStudents.length) {
+      const group = groups[currentGroupIndex];
+      group.students.push(maleStudents[maleIndex]);
+      console.log(`組別${currentGroupIndex + 1}: 額外分配男生${maleStudents[maleIndex].id}`);
+      maleIndex++;
+      currentGroupIndex = (currentGroupIndex + 1) % groupCount;
+    }
+    
+    // 第三步：輪流分配女生，確保每組達到目標人數
+    console.log('🚺 第三輪：輪流分配女生直到各組達到目標人數');
+    let femaleIndex = 0;
+    currentGroupIndex = 0;
+    
+    // 計算每組還需要多少人
+    const targetSizes = groups.map((_, index) => baseSize + (index < extra ? 1 : 0));
+    
+    while (femaleIndex < femaleStudents.length) {
+      const group = groups[currentGroupIndex];
+      const targetSize = targetSizes[currentGroupIndex];
+      
+      // 如果這組還沒達到目標人數，就分配女生
+      if (group.students.length < targetSize) {
+        group.students.push(femaleStudents[femaleIndex]);
+        console.log(`組別${currentGroupIndex + 1}: 分配女生${femaleStudents[femaleIndex].id} (${group.students.length}/${targetSize})`);
+        femaleIndex++;
+      }
+      
+      currentGroupIndex = (currentGroupIndex + 1) % groupCount;
+      
+      // 檢查是否所有組都已經達到目標人數
+      const allGroupsFull = groups.every((group, index) => group.students.length >= targetSizes[index]);
+      if (allGroupsFull) {
+        break;
+      }
+    }
+    
+    // 檢查分配結果
+    console.log('📊 分配結果檢查:');
+    groups.forEach((group, index) => {
+      const males = group.students.filter(s => s.gender === 'male').length;
+      const females = group.students.filter(s => s.gender === 'female').length;
+      const targetSize = targetSizes[index];
+      console.log(`組別${index + 1}: ${group.students.length}/${targetSize}人 (${males}男${females}女)`);
+      
       // 按座號排序每個組別內的學生
-      result.groups.forEach((group) => {
+      group.students.sort((a, b) => a.id - b.id);
+    });
+    
+    // 最終檢查：如果還有學生沒分配完，補到人數不足的組
+    const remainingMales = maleStudents.length - maleIndex;
+    const remainingFemales = femaleStudents.length - femaleIndex;
+    
+    if (remainingMales > 0 || remainingFemales > 0) {
+      console.log(`⚠️ 還有學生未分配: ${remainingMales}男${remainingFemales}女`);
+      
+      // 找出人數不足的組別
+      groups.forEach((group, index) => {
+        const targetSize = targetSizes[index];
+        while (group.students.length < targetSize && (maleIndex < maleStudents.length || femaleIndex < femaleStudents.length)) {
+          if (maleIndex < maleStudents.length) {
+            group.students.push(maleStudents[maleIndex]);
+            console.log(`補充：組別${index + 1}加入男生${maleStudents[maleIndex].id}`);
+            maleIndex++;
+          } else if (femaleIndex < femaleStudents.length) {
+            group.students.push(femaleStudents[femaleIndex]);
+            console.log(`補充：組別${index + 1}加入女生${femaleStudents[femaleIndex].id}`);
+            femaleIndex++;
+          }
+        }
+        // 重新排序
         group.students.sort((a, b) => a.id - b.id);
       });
-
-      this.groupsSignal.set(result.groups);
     }
   }
 

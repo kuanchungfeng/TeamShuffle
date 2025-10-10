@@ -6,11 +6,15 @@ import {
 
 export class GenderRatioHandler extends GroupingHandler {
   protected process(context: GroupingContext): GroupingResult {
+    console.log('🟡 [GenderRatioHandler] 開始處理');
+    console.log('輸入Context:', context);
+    
     const genderRatioCondition = context.conditions.find(
       (c) => c.type === "gender-ratio" && c.enabled
     );
 
     if (!genderRatioCondition) {
+      console.log('🟡 [GenderRatioHandler] 條件未啟用，跳過');
       return {
         success: false,
         groups: context.groups,

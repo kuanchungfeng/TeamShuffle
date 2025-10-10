@@ -7,11 +7,15 @@ import { Student } from "../../models/student.model";
 
 export class BlockDistributionHandler extends GroupingHandler {
   protected process(context: GroupingContext): GroupingResult {
+    console.log('🔵 [BlockDistributionHandler] 開始處理');
+    console.log('輸入Context:', context);
+    
     const blockDistributionCondition = context.conditions.find(
       (c) => c.type === "block-distribution" && c.enabled
     );
 
     if (!blockDistributionCondition) {
+      console.log('🔵 [BlockDistributionHandler] 條件未啟用，跳過');
       return {
         success: false,
         groups: context.groups,
@@ -103,7 +107,7 @@ export class BlockDistributionHandler extends GroupingHandler {
       .map((g) => `${g.name}: ${g.students.map((s) => s.id).join(",")}`)
       .join("; ");
 
-    return {
+    const result = {
       success: true,
       groups,
       handled: true,
@@ -115,6 +119,11 @@ export class BlockDistributionHandler extends GroupingHandler {
             }位學生隨機分配 - ${groupSummary}`
           : `已隨機分配${context.remainingStudents.length}位學生 - ${groupSummary}`,
     };
+
+    console.log('🔵 [BlockDistributionHandler] 處理完成');
+    console.log('結果:', result);
+    
+    return result;
   }
 
   private parseBlockInput(input: string): number[] {

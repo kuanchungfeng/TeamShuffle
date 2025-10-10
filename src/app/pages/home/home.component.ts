@@ -63,6 +63,7 @@ export class HomeComponent implements OnInit {
   absentInput = signal("");
   isLoading = signal(false);
   isDragOver = signal(false);
+  hasGrouped = signal(false); // 跟蹤是否已經執行過分組
 
   constructor(
     private studentService: StudentService,
@@ -205,6 +206,9 @@ export class HomeComponent implements OnInit {
         this.femaleInput()
       );
       this.studentService.initializeGroups(this.groupCount());
+      
+      // 重置分組狀態
+      this.hasGrouped.set(false);
 
       this.snackBar.open("學生與分組已載入", "關閉", { duration: 3000 });
     } catch (error) {
@@ -215,6 +219,8 @@ export class HomeComponent implements OnInit {
   updateGroupCount() {
     if (this.groups().length > 0) {
       this.studentService.initializeGroups(this.groupCount());
+      // 當分組數量改變時，重置分組狀態
+      this.hasGrouped.set(false);
     }
   }
 
@@ -238,6 +244,7 @@ export class HomeComponent implements OnInit {
     try {
       this.studentService.addStudents(this.newMaleInput(), "male");
       this.newMaleInput.set("");
+      this.hasGrouped.set(false); // 重置分組狀態
       this.snackBar.open("男生已新增", "關閉", { duration: 3000 });
     } catch (error: any) {
       this.snackBar.open(error.message, "關閉", { duration: 3000 });
@@ -248,6 +255,7 @@ export class HomeComponent implements OnInit {
     try {
       this.studentService.addStudents(this.newFemaleInput(), "female");
       this.newFemaleInput.set("");
+      this.hasGrouped.set(false); // 重置分組狀態
       this.snackBar.open("女生已新增", "關閉", { duration: 3000 });
     } catch (error: any) {
       this.snackBar.open(error.message, "關閉", { duration: 3000 });
@@ -257,6 +265,7 @@ export class HomeComponent implements OnInit {
   setAbsentStudents() {
     try {
       this.studentService.setAbsentStudents(this.absentInput());
+      this.hasGrouped.set(false); // 重置分組狀態
       this.snackBar.open("已設定缺席學生", "關閉", { duration: 3000 });
     } catch (error: any) {
       this.snackBar.open("設定失敗", "關閉", { duration: 3000 });
@@ -265,6 +274,7 @@ export class HomeComponent implements OnInit {
 
   removeStudent(studentId: number) {
     this.studentService.removeStudent(studentId);
+    this.hasGrouped.set(false); // 重置分組狀態
     this.snackBar.open("學生已移除", "關閉", { duration: 2000 });
   }
 
@@ -272,11 +282,12 @@ export class HomeComponent implements OnInit {
     this.isLoading.set(true);
 
     // Simulate 2 seconds loading
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    await new Promise((resolve) => setTimeout(resolve, 100));
 
     try {
       // 現在 StudentService 會直接從 GroupingConditionsService 獲取條件
       this.studentService.performGrouping();
+      this.hasGrouped.set(true); // 設置已完成分組狀態
       this.snackBar.open("分組完成！", "關閉", { duration: 3000 });
     } catch (error: any) {
       this.snackBar.open("分組失敗: " + error.message, "關閉", {
@@ -285,6 +296,11 @@ export class HomeComponent implements OnInit {
     } finally {
       this.isLoading.set(false);
     }
+  }
+
+  // 重新分組方法
+  async regroupStudents() {
+    await this.performGrouping();
   }
 
   onDrop(event: CdkDragDrop<Student[]>) {

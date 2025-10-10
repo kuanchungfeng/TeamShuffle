@@ -7,11 +7,15 @@ import { Student } from "../../models/student.model";
 
 export class SameGroupHandler extends GroupingHandler {
   protected process(context: GroupingContext): GroupingResult {
+    console.log('🟢 [SameGroupHandler] 開始處理');
+    console.log('輸入Context:', context);
+    
     const sameGroupCondition = context.conditions.find(
       (c) => c.type === "same-group" && c.enabled
     );
 
     if (!sameGroupCondition) {
+      console.log('🟢 [SameGroupHandler] 條件未啟用，跳過');
       return {
         success: false,
         groups: context.groups,
@@ -117,7 +121,7 @@ export class SameGroupHandler extends GroupingHandler {
       .map((g) => `${g.name}: ${g.students.map((s) => s.id).join(",")}`)
       .join("; ");
 
-    return {
+    const result = {
       success: true,
       groups,
       handled: true,
@@ -129,6 +133,11 @@ export class SameGroupHandler extends GroupingHandler {
             }位學生隨機分配 - ${groupSummary}`
           : `已隨機分配${context.remainingStudents.length}位學生 - ${groupSummary}`,
     };
+
+    console.log('🟢 [SameGroupHandler] 處理完成');
+    console.log('結果:', result);
+    
+    return result;
   }
 
   private parseSameGroupInput(input: string): number[][] {

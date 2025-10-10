@@ -7,11 +7,15 @@ import { Student } from "../../models/student.model";
 
 export class DifferentGroupHandler extends GroupingHandler {
   protected process(context: GroupingContext): GroupingResult {
+    console.log('🔴 [DifferentGroupHandler] 開始處理');
+    console.log('輸入Context:', context);
+    
     const differentGroupCondition = context.conditions.find(
       (c) => c.type === "different-group" && c.enabled
     );
 
     if (!differentGroupCondition) {
+      console.log('🔴 [DifferentGroupHandler] 條件未啟用，跳過');
       return {
         success: false,
         groups: context.groups,
@@ -97,7 +101,7 @@ export class DifferentGroupHandler extends GroupingHandler {
       .map((g) => `${g.name}: ${g.students.map((s) => s.id).join(",")}`)
       .join("; ");
 
-    return {
+    const result = {
       success: true,
       groups,
       handled: true,
@@ -109,6 +113,11 @@ export class DifferentGroupHandler extends GroupingHandler {
             }位學生隨機分配 - ${groupSummary}`
           : `已隨機分配${context.remainingStudents.length}位學生 - ${groupSummary}`,
     };
+
+    console.log('🔴 [DifferentGroupHandler] 處理完成');
+    console.log('結果:', result);
+    
+    return result;
   }
 
   private parseDifferentGroupInput(input: string): number[][] {

@@ -539,23 +539,84 @@ export class StudentService {
 
   copyGroupsToClipboard(): string {
     const groups = this.groupsSignal();
-    const result = groups
-      .map((group) => {
-        const students = [...group.students];
+    const tableRows = groups.map((group) => {
+      const students = [...group.students];
 
-        // Sort so leader comes first
-        students.sort((a, b) => {
-          if (a.isLeader && !b.isLeader) return -1;
-          if (!a.isLeader && b.isLeader) return 1;
-          return a.id - b.id;
-        });
+      // Sort so leader comes first
+      students.sort((a, b) => {
+        if (a.isLeader && !b.isLeader) return -1;
+        if (!a.isLeader && b.isLeader) return 1;
+        return a.id - b.id;
+      });
 
-        const studentIds = students.map((s) => s.id).join(",");
-        return `${group.name}: [${studentIds}]`;
-      })
-      .join(", ");
+      const formattedStudents =
+        students.length > 0
+          ? students.map(
+              (s) =>
+                `${s.gender === "male" ? "男" : "女"}${s.id}${
+                  s.isLeader ? "（組長）" : ""
+                }`
+            )
+          : ["尚未分配學生"];
 
-    navigator.clipboard.writeText(result);
-    return result;
+      return {
+        groupName: group.name,
+        studentsText: formattedStudents.join("、"),
+        studentsHtml: formattedStudents
+          .map((student) => `<div style="padding:4px 0;">${student}</div>`)
+          .join(""),
+      };
+    });
+
+    const tableHtml = `
+      <div style="width:100%;padding:16px;box-sizing:border-box;">
+        <h2 style="text-align:center;font-size:32px;margin-bottom:16px;font-family:'Microsoft JhengHei',Arial,sans-serif;">分組結果</h2>
+        <table style="width:100%;border-collapse:collapse;table-layout:fixed;font-family:'Microsoft JhengHei',Arial,sans-serif;font-size:24px;">
+          <thead>
+            <tr>
+              <th style="width:25%;border:2px solid #4b5563;padding:12px;background:#e5e7eb;">組別</th>
+              <th style="border:2px solid #4b5563;padding:12px;background:#e5e7eb;">學生</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${tableRows
+              .map(
+                (row, index) => `
+                  <tr>
+                    <td style="border:2px solid #9ca3af;padding:14px;font-weight:600;text-align:center;background:${
+                      index % 2 === 0 ? "#ffffff" : "#f9fafb"
+                    };">${row.groupName}</td>
+                    <td style="border:2px solid #9ca3af;padding:14px;vertical-align:top;background:${
+                      index % 2 === 0 ? "#ffffff" : "#f9fafb"
+                    };">${row.studentsHtml}</td>
+                  </tr>`
+              )
+              .join("")}
+          </tbody>
+        </table>
+      </div>
+    `.trim();
+
+    const plainText = tableRows
+      .map((row) => `${row.groupName}\t${row.studentsText}`)
+      .join("\n");
+
+    if (typeof navigator !== "undefined" && navigator.clipboard) {
+      if ("write" in navigator.clipboard && typeof ClipboardItem !== "undefined") {
+        const htmlBlob = new Blob([tableHtml], { type: "text/html" });
+        const textBlob = new Blob([plainText], { type: "text/plain" });
+
+        navigator.clipboard.write([
+          new ClipboardItem({
+            "text/html": htmlBlob,
+            "text/plain": textBlob,
+          }),
+        ]);
+      } else if (navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(plainText);
+      }
+    }
+
+    return plainText;
   }
 }

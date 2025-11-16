@@ -90,6 +90,54 @@
   }
 }
 
+.group-results {
+  display: flex;
+  gap: 1.5rem;
+  overflow-x: auto;
+  padding-bottom: 1rem;
+  scroll-snap-type: x proximity;
+
+  &__card {
+    min-width: 280px;
+    scroll-snap-align: start;
+    border-width: 3px;
+  }
+
+  &__header {
+    justify-content: center;
+    text-align: center;
+  }
+
+  &__title {
+    font-size: 1.9rem;
+    font-weight: 800;
+  }
+
+  &__subtitle {
+    font-size: 1.2rem;
+    color: #4b5563;
+  }
+
+  &__content {
+    padding-top: 0.5rem;
+  }
+
+  &__list {
+    min-height: 160px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  &__student {
+    font-size: 1.5rem;
+    font-weight: 700;
+    padding: 0.9rem 1.25rem;
+    border-radius: 9999px;
+    justify-content: space-between;
+  }
+}
+
 .leader-star {
   color: #f59e0b;
   filter: drop-shadow(0 2px 4px rgba(245, 158, 11, 0.3));

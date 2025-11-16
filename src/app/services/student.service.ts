@@ -551,19 +551,30 @@ export class StudentService {
 
       const formattedStudents =
         students.length > 0
-          ? students.map(
-              (s) =>
-                `${s.gender === "male" ? "男" : "女"}${s.id}${
-                  s.isLeader ? "（組長）" : ""
-                }`
-            )
-          : ["尚未分配學生"];
+          ? students.map((s) => {
+              const label = `${s.gender === "male" ? "男" : "女"}${s.id}${
+                s.isLeader ? "（組長）" : ""
+              }`;
+              const bgColor = s.gender === "male" ? "#dbeafe" : "#ffe4e6";
+              const textColor = s.gender === "male" ? "#1d4ed8" : "#be185d";
+
+              return {
+                text: label,
+                html: `<div style="display:inline-block;margin:4px 6px 4px 0;padding:8px 16px;border-radius:9999px;font-size:22px;font-weight:700;background:${bgColor};color:${textColor};">${label}</div>`,
+              };
+            })
+          : [
+              {
+                text: "尚未分配學生",
+                html: `<div style="padding:8px 12px;color:#4b5563;">尚未分配學生</div>`,
+              },
+            ];
 
       return {
         groupName: group.name,
-        studentsText: formattedStudents.join("、"),
+        studentsText: formattedStudents.map((student) => student.text).join("、"),
         studentsHtml: formattedStudents
-          .map((student) => `<div style="padding:4px 0;">${student}</div>`)
+          .map((student) => student.html)
           .join(""),
       };
     });
